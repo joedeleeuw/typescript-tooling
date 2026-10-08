@@ -1,0 +1,9 @@
+export default Object.freeze({
+  useTabs: false,
+  tabWidth: 2,
+  printWidth: 80,
+  singleQuote: false,
+  trailingComma: "es5",
+  semi: true,
+  arrowParens: "always",
+});

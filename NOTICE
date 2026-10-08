@@ -1,0 +1,3 @@
+Shared configuration extracted from joedeleeuw/antidrift at e753ff6ef5a52a1c5d265fa5b102b836b69a09d8, MIT, copyright 2026 Joe de Leeuw.
+
+The extraction contains authored configuration and native-rule selections, not Antidrift's third-party portable rule implementations. Referenced ESLint/Oxlint plugins remain separate dependencies under their own licenses.

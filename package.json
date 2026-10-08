@@ -1,0 +1,92 @@
+{
+  "name": "@joedeleeuw/typescript-tooling",
+  "version": "0.1.0",
+  "description": "Shared tool-native TypeScript, lint, formatting and architecture defaults.",
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@11.1.3",
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joedeleeuw/typescript-tooling.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./eslint": {
+      "types": "./src/eslint/index.d.mts",
+      "import": "./src/eslint/index.mjs"
+    },
+    "./oxlint": {
+      "types": "./src/oxlint/index.d.mts",
+      "import": "./src/oxlint/index.mjs"
+    },
+    "./prettier": {
+      "types": "./src/prettier/index.d.mts",
+      "import": "./src/prettier/index.mjs"
+    },
+    "./dependency-cruiser": {
+      "types": "./src/dependency-cruiser/index.d.cts",
+      "require": "./src/dependency-cruiser/index.cjs",
+      "default": "./src/dependency-cruiser/index.cjs"
+    },
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "tsconfig",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "package:verify": "node scripts/verify-consumer.mjs",
+    "check": "pnpm format:check && pnpm typecheck && pnpm package:verify"
+  },
+  "dependencies": {
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",
+    "@typescript-eslint/parser": "^8.60.1",
+    "eslint-plugin-sql-template": "^3.2.0"
+  },
+  "peerDependencies": {
+    "eslint": ">=9.38.0 <11",
+    "oxlint": ">=1.78.0 <2",
+    "typescript": ">=6.0 <6.1",
+    "prettier": ">=3 <4",
+    "dependency-cruiser": ">=17 <19"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    },
+    "oxlint": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    },
+    "prettier": {
+      "optional": true
+    },
+    "dependency-cruiser": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.0",
+    "dependency-cruiser": "18.5.0",
+    "eslint": "10.12.0",
+    "oxlint": "1.87.0",
+    "oxlint-tsgolint": "7.0.2003",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3"
+  }
+}
