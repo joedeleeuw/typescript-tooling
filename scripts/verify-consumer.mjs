@@ -1,5 +1,11 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -364,8 +370,9 @@ const reports = join(root, "reports");
 mkdirSync(reports, { recursive: true });
 writeFileSync(
   join(reports, "packed-consumer.json"),
-  JSON.stringify({ scratch, tarball, receipt }, null, 2)
+  JSON.stringify({ receipt }, null, 2)
 );
+rmSync(scratch, { recursive: true, force: true });
 console.log(
   `Packed consumer acceptance passed; ${receipt.length} commands. Receipt: ${join(reports, "packed-consumer.json")}`
 );
