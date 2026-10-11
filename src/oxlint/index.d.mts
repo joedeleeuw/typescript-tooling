@@ -3,6 +3,7 @@ export const complexityRules: Readonly<{
   complexity: ["error", Readonly<{ max: 25; variant: "modified" }>];
   "max-depth": ["error", 4];
   "max-params": ["error", Readonly<{ max: 7 }>];
+  "no-nested-ternary": "error";
 }>;
 export const typescriptSyntaxRules: Readonly<DummyRuleMap>;
 export const typescriptTypeAwareRules: Readonly<DummyRuleMap>;

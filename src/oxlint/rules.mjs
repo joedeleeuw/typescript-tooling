@@ -8,6 +8,7 @@ export const complexityRules = Object.freeze({
   complexity: ["error", modifiedComplexityOptions],
   "max-depth": ["error", 4],
   "max-params": ["error", maxParametersOptions],
+  "no-nested-ternary": "error",
 });
 
 export const typescriptSyntaxRules = Object.freeze({

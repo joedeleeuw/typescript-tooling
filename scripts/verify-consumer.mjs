@@ -191,6 +191,18 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
     );
     put(
       consumer,
+      "src/nested.ts",
+      'export const sign = (count: number) => (count > 0 ? "up" : count < 0 ? "down" : "flat");\n'
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "oxlint", "src/nested.ts"],
+      1,
+      "no-nested-ternary"
+    );
+    put(
+      consumer,
       "src/typed.ts",
       'export const parsed: string = JSON.parse("42");\n'
     );

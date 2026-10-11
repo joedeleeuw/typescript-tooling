@@ -1,6 +1,6 @@
 {
   "name": "@joedeleeuw/typescript-tooling",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared tool-native TypeScript, lint, formatting and architecture defaults.",
   "type": "module",
   "license": "MIT",

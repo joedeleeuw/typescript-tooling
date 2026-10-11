@@ -44,7 +44,6 @@ const nativeRules = {
     "eslint/no-multi-assign": "error",
     "eslint/no-multi-str": "error",
     "eslint/no-negated-condition": "error",
-    "eslint/no-nested-ternary": "error",
     "eslint/no-new": "error",
     "eslint/no-new-func": "error",
     "eslint/no-new-wrappers": "error",
@@ -465,6 +464,7 @@ Object.assign(nativeRules.eslint, {
   "eslint/complexity": complexityRules.complexity,
   "eslint/max-depth": complexityRules["max-depth"],
   "eslint/max-params": complexityRules["max-params"],
+  "eslint/no-nested-ternary": complexityRules["no-nested-ternary"],
 });
 
 export const adoptionPresets = Object.freeze(
