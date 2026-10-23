@@ -77,8 +77,11 @@ export const rikaLabsRules = Object.freeze({
   "rikalabs/no-placeholder-tests": "error",
   "rikalabs/no-relative-cross-package-imports": "error",
   "rikalabs/no-todo-without-issue": "error",
-  "rikalabs/no-trivial-property-helpers": "error",
   "rikalabs/no-tutorial-comments": "error",
+  // Off: besides trivial helper definitions it reports every call named like
+  // getValue or readString, such as Monaco's model.getValue(). On four public
+  // repositories 440 of its 449 reports were such calls.
+  "rikalabs/no-trivial-property-helpers": "off",
   // Opt-in: 6 of 20 sampled reports on four public repositories were real problems.
   "rikalabs/no-unlisted-external-imports": "off",
 });

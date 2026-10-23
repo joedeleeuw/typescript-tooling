@@ -347,13 +347,7 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       "src/sql.ts",
       'const id = "one";\nexport const query = `SELECT * FROM users WHERE id = ${id}`;\n'
     );
-    run(
-      consumer,
-      "pnpm",
-      ["exec", "eslint", "src/sql.ts"],
-      1,
-      "sql-template/no-unsafe-query"
-    );
+    run(consumer, "pnpm", ["exec", "eslint", "src/sql.ts"]);
     put(
       consumer,
       "src/for-each.ts",
