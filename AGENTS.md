@@ -1,6 +1,6 @@
 # TypeScript tooling
 
-This repository owns reusable, tool-native TypeScript, ESLint, Oxlint, Prettier and dependency-cruiser configuration. It has no dependency on Antidrift or an application framework.
+This repository owns reusable TypeScript, ESLint, Oxlint, Prettier and dependency-cruiser configuration: standard rules and tool setup, plus lint rules vendored from projects that publish no package. A check from a published, maintained package is a dependency that this repository turns on, without re-proving it. Antidrift owns only its own drift and policy rules, and each problem has one owner: do not vendor or enable a copied rule that only duplicates a rule already enabled here. It has no dependency on Antidrift or an application framework.
 
 - Keep project paths, package-layer allowlists, environment variables and existing-debt ratchets in consumers.
 - Expose only declared package subpaths. No compatibility aliases, config interpreter, wrapper CLI or generated agent machinery.

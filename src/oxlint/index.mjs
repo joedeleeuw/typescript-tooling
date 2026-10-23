@@ -3,8 +3,10 @@ import { resolve } from "node:path";
 import { defineConfig } from "oxlint";
 import {
   complexityRules,
+  rikaLabsRules,
   typescriptSyntaxRules,
   typescriptTypeAwareRules,
+  vendoredRules,
 } from "./rules.mjs";
 
 export { complexityRules, typescriptSyntaxRules, typescriptTypeAwareRules };
@@ -60,6 +62,14 @@ export function createConfig({
           "@eslint-community/eslint-plugin-eslint-comments"
         ),
       },
+      {
+        name: "rikalabs",
+        specifier: packageRequire.resolve("@rikalabs/oxlint-standards/plugin"),
+      },
+      {
+        name: "tooling",
+        specifier: packageRequire.resolve("../oxlint-plugin/index.js"),
+      },
     ],
     options: {
       denyWarnings: true,
@@ -71,6 +81,8 @@ export function createConfig({
       ...complexityRules,
       ...typescriptSyntaxRules,
       ...(typeAware ? typescriptTypeAwareRules : {}),
+      ...rikaLabsRules,
+      ...vendoredRules,
       "eslint-comments/require-description": "error",
       "eslint-comments/disable-enable-pair": "error",
       "eslint-comments/no-duplicate-disable": "error",

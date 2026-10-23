@@ -1,3 +1,120 @@
-Shared configuration extracted from joedeleeuw/antidrift at e753ff6ef5a52a1c5d265fa5b102b836b69a09d8, MIT, copyright 2026 Joe de Leeuw.
+@joedeleeuw/typescript-tooling notices
 
-The extraction contains authored configuration and native-rule selections, not Antidrift's third-party portable rule implementations. Referenced ESLint/Oxlint plugins remain separate dependencies under their own licenses.
+Shared configuration was extracted from joedeleeuw/antidrift at
+e753ff6ef5a52a1c5d265fa5b102b836b69a09d8, MIT, copyright 2026 Joe de Leeuw.
+
+The Oxlint plugin in src/oxlint-plugin was vendored from joedeleeuw/antidrift
+at 048a3927c11e9025ae72b8f0011d0eca9da73938. Code antidrift authored is MIT,
+copyright 2026 Joe de Leeuw. The third-party ports it carries are listed below
+with their licenses. Referenced ESLint and Oxlint plugins, including
+@rikalabs/oxlint-standards, remain separate dependencies under their own
+licenses.
+
+The ports were modified by antidrift contributors, 2026. This package changed
+only their relative imports, which point at the files listed here, added a
+license pointer to the Sentry port's header, and converted the TypeScript
+helpers they import to JavaScript. Rule names, messages, option schemas and
+behavior are those of antidrift at the commit above.
+
+stella, Apache-2.0
+------------------
+
+Upstream repository: https://github.com/stella/stella
+Upstream directory: .oxlint-plugins
+Pinned revision: 6ce0889e3a21d5dd1e907acfea2bf0248825c1fe
+Revision date: 2026-09-05T14:15:11Z
+The upstream NOTICE is reproduced verbatim below. The complete license is
+licenses/Apache-2.0.txt.
+
+----- upstream NOTICE -----
+stella
+Copyright 2026 stella labs, s.r.o.
+
+This product includes software developed at stella labs, s.r.o.
+(https://stll.app/).
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this product except in compliance with the License. You may
+obtain a copy of the License in the LICENSE file at the root of this
+repository or at http://www.apache.org/licenses/LICENSE-2.0.
+----- end upstream NOTICE -----
+
+All ports listed below differ from upstream at the pinned revision. Changes
+include TypeScript-to-JavaScript conversion, plugin registration, declared
+option schemas, configurable owners and detector repairs.
+
+MODIFIED src/oxlint-plugin/stella/ast.js <- .oxlint-plugins/utils.ts
+MODIFIED src/oxlint-plugin/stella/confine-owner.js <- .oxlint-plugins/confine-owner.ts
+MODIFIED src/oxlint-plugin/stella/docs-source-policy.js <- .oxlint-plugins/docs-source-policy.ts
+MODIFIED src/oxlint-plugin/stella/icon-button-requires-tooltip.js <- .oxlint-plugins/icon-button-requires-tooltip.ts
+MODIFIED src/oxlint-plugin/stella/no-adhoc-loader.js <- .oxlint-plugins/no-adhoc-loader.ts
+MODIFIED src/oxlint-plugin/stella/no-ambient-hotkey-format.js <- .oxlint-plugins/no-ambient-hotkey-format.ts
+MODIFIED src/oxlint-plugin/stella/no-async-context-enter-with.js <- .oxlint-plugins/no-async-context-enter-with.ts
+MODIFIED src/oxlint-plugin/stella/no-auth-token-in-web-storage.js <- .oxlint-plugins/no-auth-token-in-web-storage.ts
+MODIFIED src/oxlint-plugin/stella/no-awaited-builder-union.js <- .oxlint-plugins/no-awaited-builder-union.ts
+MODIFIED src/oxlint-plugin/stella/no-centered-scroll-column.js <- .oxlint-plugins/no-centered-scroll-column.ts
+MODIFIED src/oxlint-plugin/stella/no-dialog-trigger-menu-item.js <- .oxlint-plugins/no-dialog-trigger-menu-item.ts
+MODIFIED src/oxlint-plugin/stella/no-disabled-tooltip-trigger.js <- .oxlint-plugins/no-disabled-tooltip-trigger.ts
+MODIFIED src/oxlint-plugin/stella/no-eager-singleton.js <- .oxlint-plugins/no-eager-singleton.ts
+MODIFIED src/oxlint-plugin/stella/no-inline-style-colors.js <- .oxlint-plugins/no-inline-style-colors.ts
+MODIFIED src/oxlint-plugin/stella/no-omitted-prop-respread.js <- .oxlint-plugins/no-omitted-prop-respread.ts
+MODIFIED src/oxlint-plugin/stella/no-partial-record-satisfies.js <- .oxlint-plugins/no-partial-record-satisfies.ts
+MODIFIED src/oxlint-plugin/stella/no-path-prefix-containment.js <- .oxlint-plugins/no-path-prefix-containment.ts
+MODIFIED src/oxlint-plugin/stella/no-physical-properties.js <- .oxlint-plugins/no-physical-properties.ts
+MODIFIED src/oxlint-plugin/stella/no-portal-under-interactive-ancestor.js <- .oxlint-plugins/require-contained-handler.ts
+MODIFIED src/oxlint-plugin/stella/no-raw-filename-write.js <- .oxlint-plugins/security-guards.ts
+MODIFIED src/oxlint-plugin/stella/no-raw-foreground-opacity.js <- .oxlint-plugins/no-raw-foreground-opacity.ts
+MODIFIED src/oxlint-plugin/stella/no-redacted-log-attribute-key.js <- .oxlint-plugins/no-redacted-log-attribute-key.ts
+MODIFIED src/oxlint-plugin/stella/no-spread-input-in-query-key.js <- .oxlint-plugins/no-spread-input-in-query-key.ts
+MODIFIED src/oxlint-plugin/stella/no-static-devtools-import.js <- .oxlint-plugins/no-static-devtools-import.ts
+MODIFIED src/oxlint-plugin/stella/no-unformatted-number.js <- .oxlint-plugins/no-unformatted-number.ts
+MODIFIED src/oxlint-plugin/stella/no-unsafe-inner-html.js <- .oxlint-plugins/no-unsafe-inner-html.ts
+MODIFIED src/oxlint-plugin/stella/no-unsanitized-href.js <- .oxlint-plugins/security-guards.ts
+MODIFIED src/oxlint-plugin/stella/physical-properties.js <- .oxlint-plugins/physical-properties.ts
+MODIFIED src/oxlint-plugin/stella/require-detached-label-shape.js <- .oxlint-plugins/require-detached-label-shape.ts
+MODIFIED src/oxlint-plugin/stella/require-dir-on-rendered-name.js <- .oxlint-plugins/require-dir-on-rendered-name.ts
+MODIFIED src/oxlint-plugin/stella/require-exhaustive-panic.js <- .oxlint-plugins/require-exhaustive-panic.ts
+MODIFIED src/oxlint-plugin/stella/require-fetch-timeout.js <- .oxlint-plugins/require-fetch-timeout.ts
+MODIFIED src/oxlint-plugin/stella/require-function-replacer.js <- .oxlint-plugins/require-function-replacer.ts
+MODIFIED src/oxlint-plugin/stella/require-query-key-factory.js <- .oxlint-plugins/require-query-key-factory.ts
+MODIFIED src/oxlint-plugin/stella/require-query-signal.js <- .oxlint-plugins/require-query-signal.ts
+MODIFIED src/oxlint-plugin/stella/require-safe-window-open.js <- .oxlint-plugins/require-safe-window-open.ts
+MODIFIED src/oxlint-plugin/stella/require-secure-document-response.js <- .oxlint-plugins/security-guards.ts
+MODIFIED src/oxlint-plugin/stella/require-stable-snapshot.js <- .oxlint-plugins/require-stable-snapshot.ts
+MODIFIED src/oxlint-plugin/stella/require-stream-reader-disposal.js <- .oxlint-plugins/require-stream-reader-disposal.ts
+
+class-value.js, imported-owner.js, package-owner.js and rule-scope.js in
+src/oxlint-plugin/stella are antidrift's own helpers (MIT). rule-scope.js is
+converted to JavaScript from antidrift src/semantic-adapters/kernel/rule-scope.ts.
+
+anti-slop, MIT
+--------------
+
+Dillon Mulroy: dmmulroy/anti-slop, MIT.
+Copyright (c) 2026 Dillon Mulroy
+https://github.com/dmmulroy/anti-slop
+Full permission notice: src/oxlint-plugin/anti-slop/LICENSE
+
+MODIFIED src/oxlint-plugin/anti-slop/no-unknown-type-aliases.js <- antidrift src/oxlint-plugin/anti-slop/rules/no-unknown-type-aliases.js, adapted from anti-slop
+
+Sentry, FSL-1.1-Apache-2.0
+--------------------------
+
+getsentry/sentry: Functional Source License, Version 1.1, Apache 2.0 Future
+License.
+Copyright 2008-2024 Functional Software, Inc. dba Sentry
+https://github.com/getsentry/sentry
+Full terms: licenses/Sentry-FSL-1.1-Apache-2.0.md, copied unchanged from
+LICENSE.md at getsentry/sentry 98ab1a591e89c595eb0af46e0ee87c88b1852fca.
+
+MODIFIED src/oxlint-plugin/sentry/no-calling-components-as-functions.js <- static/eslint/eslintPluginSentry no-calling-components-as-functions
+
+Antidrift ported the rule by 2026-06-22 without recording the upstream
+revision. The rule now lives upstream at
+static/oxlint/eslintPluginSentry/noCallingComponentsAsFunctions.ts.
+
+src/oxlint-plugin/sentry/component-resolution.js is antidrift's own code (MIT):
+findVariable, functionReturnsJsx, isFunctionLike and unwrapExpression, with the
+functions they call, converted to JavaScript from antidrift
+src/semantic-adapters/kernel/async-control-flow.ts, jsx-returns.ts,
+syntax-function.ts, syntax-node.ts and syntax-scope.ts.

@@ -19,6 +19,12 @@ export const restrictedSyntax = Object.freeze([
     message:
       "forwardRef is deprecated in React 19; accept ref as an ordinary prop instead.",
   },
+  {
+    selector:
+      'CallExpression[callee.property.name="forEach"] > :matches(ArrowFunctionExpression, FunctionExpression)[async=true]',
+    message:
+      "forEach does not wait for async callbacks; use for...of with await, or Promise.all.",
+  },
 ]);
 
 export function createConfig({

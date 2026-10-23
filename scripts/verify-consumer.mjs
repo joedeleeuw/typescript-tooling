@@ -9,6 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { vendoredRuleCases } from "./vendored-rule-cases.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const scratch = mkdtempSync(join(tmpdir(), "typescript-tooling-consumer-"));
@@ -45,7 +46,7 @@ function run(cwd, command, args, expected = 0, diagnostic) {
     diagnostic,
     output,
   });
-  return output;
+  return result.stdout;
 }
 
 function put(cwd, name, text) {
@@ -54,12 +55,93 @@ function put(cwd, name, text) {
   writeFileSync(target, text);
 }
 
+// Each vendored rule runs alone on its own invalid and valid file, through the
+// plugin registration of the packed createConfig. Off-by-default rules are
+// enabled here like the rest.
+function proveVendoredRules(consumer) {
+  const overrides = [];
+  const expectations = [];
+  for (const entry of vendoredRuleCases) {
+    for (const [kind, code, options] of [
+      ["invalid", entry.invalid, entry.options],
+      ["valid", entry.valid, entry.validOptions ?? entry.options],
+    ]) {
+      const file = `vendored/${entry.rule}/${kind}/${entry.filename ?? "component.tsx"}`;
+      put(consumer, file, `${code}\n`);
+      const ruleOptions =
+        entry.rule === "docs-source-policy"
+          ? { ...options, policyFile: file }
+          : options;
+      overrides.push({
+        files: [file],
+        rules: {
+          [`tooling/${entry.rule}`]:
+            ruleOptions === undefined ? "error" : ["error", ruleOptions],
+        },
+      });
+      expectations.push({
+        file,
+        codes: kind === "invalid" ? [`tooling(${entry.rule})`] : [],
+      });
+    }
+  }
+  put(
+    consumer,
+    "vendored.config.ts",
+    `import { createConfig } from "@joedeleeuw/typescript-tooling/oxlint";\nconst { categories, jsPlugins } = createConfig({ repoRoot: import.meta.dirname });\nexport default { categories, jsPlugins, overrides: ${JSON.stringify(overrides)} };\n`
+  );
+  const { diagnostics } = JSON.parse(
+    run(
+      consumer,
+      "pnpm",
+      [
+        "exec",
+        "oxlint",
+        "--config",
+        "vendored.config.ts",
+        "--format",
+        "json",
+        "vendored",
+      ],
+      1
+    )
+  );
+  for (const { file, codes } of expectations) {
+    const reported = diagnostics
+      .filter((diagnostic) => diagnostic.filename === file)
+      .map((diagnostic) => diagnostic.code);
+    if (JSON.stringify(reported) !== JSON.stringify(codes)) {
+      throw new Error(
+        `${consumer}/${file}: expected ${JSON.stringify(codes)}, received ${JSON.stringify(reported)}`
+      );
+    }
+  }
+  if (diagnostics.length !== vendoredRuleCases.length) {
+    throw new Error(
+      `Vendored rules reported ${diagnostics.length} diagnostics for ${vendoredRuleCases.length} invalid files`
+    );
+  }
+}
+
 run(root, "pnpm", ["pack", "--pack-destination", scratch]);
 const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const tarball = join(
   scratch,
   `${manifest.name.replace(/^@/, "").replace("/", "-")}-${manifest.version}.tgz`
 );
+const packedFiles = new Set(
+  run(scratch, "tar", ["-tzf", tarball]).split("\n").filter(Boolean)
+);
+for (const required of [
+  "package/NOTICE",
+  "package/licenses/Apache-2.0.txt",
+  "package/licenses/Sentry-FSL-1.1-Apache-2.0.md",
+  "package/src/oxlint-plugin/anti-slop/LICENSE",
+]) {
+  if (!packedFiles.has(required)) {
+    throw new Error(`Packed artifact is missing ${required}`);
+  }
+}
 
 for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
   for (const tier of ["syntax-only", "full"]) {
@@ -219,6 +301,27 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       tier === "full" ? 1 : 0,
       tier === "full" ? "no-unsafe-assignment" : undefined
     );
+    put(
+      consumer,
+      "src/anemic.ts",
+      'export function fail(): never {\n  throw new Error("Something went wrong");\n}\n'
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "oxlint", "src/anemic.ts"],
+      1,
+      "rikalabs(no-anemic-errors)"
+    );
+    put(consumer, "src/payload.ts", "export type Payload = unknown;\n");
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "oxlint", "src/payload.ts"],
+      1,
+      "tooling(no-unknown-type-aliases)"
+    );
+    proveVendoredRules(consumer);
     put(consumer, "src/enum.ts", "export enum State { Ready }\n");
     run(
       consumer,
@@ -251,6 +354,24 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       1,
       "sql-template/no-unsafe-query"
     );
+    put(
+      consumer,
+      "src/for-each.ts",
+      "declare const items: string[];\ndeclare function save(item: string): Promise<void>;\nexport function saveAll() {\n  items.forEach(async (item) => { await save(item); });\n}\n"
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "eslint", "src/for-each.ts"],
+      1,
+      "forEach does not wait for async callbacks"
+    );
+    put(
+      consumer,
+      "src/for-of.ts",
+      "declare const items: string[];\ndeclare function save(item: string): Promise<void>;\nexport async function saveAll() {\n  for (const item of items) {\n    await save(item);\n  }\n}\n"
+    );
+    run(consumer, "pnpm", ["exec", "eslint", "src/for-of.ts"]);
     put(consumer, "src/strict.ts", "export const value: string = undefined;\n");
     run(
       consumer,
