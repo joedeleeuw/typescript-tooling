@@ -2,3 +2,5 @@ packages:
   - .
 
 allowBuilds: {}
+minimumReleaseAgeExclude:
+  - eslint-plugin-unicorn@79.0.0

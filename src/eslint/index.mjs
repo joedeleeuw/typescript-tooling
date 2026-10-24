@@ -1,6 +1,7 @@
 import parser from "@typescript-eslint/parser";
 import { defineConfig } from "eslint/config";
 import sqlTemplate from "eslint-plugin-sql-template";
+import typescriptEslint from "typescript-eslint";
 
 export const restrictedSyntax = Object.freeze([
   {
@@ -31,8 +32,12 @@ export function createConfig({
       parser,
       parserOptions: { projectService, tsconfigRootDir },
     },
-    plugins: { "sql-template": sqlTemplate },
+    plugins: {
+      "sql-template": sqlTemplate,
+      "@typescript-eslint": typescriptEslint.plugin,
+    },
     rules: {
+      "@typescript-eslint/no-explicit-any": "error",
       "no-restricted-syntax": ["error", ...restrictedSyntax],
       "sql-template/no-unsafe-query": "error",
     },

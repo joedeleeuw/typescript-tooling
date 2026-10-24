@@ -14,6 +14,9 @@ export function createConfig(options?: {
   repoRoot?: string;
   maxLines?: number;
   typeAware?: boolean;
+  enforceNoPropertyDefaultFallbacks?: boolean;
+  propertyDefaultAllowedFiles?: readonly string[];
+  enforceNoDerivedStateEffects?: boolean;
 }): OxlintConfig;
 export default createConfig;
 export type AdoptionPresetName =

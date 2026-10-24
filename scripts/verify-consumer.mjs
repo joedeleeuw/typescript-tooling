@@ -144,7 +144,7 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
     put(
       consumer,
       "native.mts",
-      'import {createConfig as graph} from "@joedeleeuw/typescript-tooling/dependency-cruiser";\nimport {complexityRules,typescriptSyntaxRules,createConfig as oxlint} from "@joedeleeuw/typescript-tooling/oxlint";\nimport {createConfig as eslint} from "@joedeleeuw/typescript-tooling/eslint";\nimport prettier from "@joedeleeuw/typescript-tooling/prettier";\nimport {defineConfig} from "oxlint";\ndefineConfig({rules:{...complexityRules,...typescriptSyntaxRules}});\nconst cap:25=complexityRules.complexity[1].max;\ngraph({cycleSeverity:"warn"});oxlint();eslint();console.log(cap,prettier);\n'
+      'import {createConfig as graph} from "@joedeleeuw/typescript-tooling/dependency-cruiser";\nimport {complexityRules,typescriptSyntaxRules,createConfig as oxlint} from "@joedeleeuw/typescript-tooling/oxlint";\nimport {createConfig as eslint} from "@joedeleeuw/typescript-tooling/eslint";\nimport prettier from "@joedeleeuw/typescript-tooling/prettier";\nimport {defineConfig} from "oxlint";\ndefineConfig({rules:{...complexityRules,...typescriptSyntaxRules}});\nconst cap:25=complexityRules.complexity[1].max;\ngraph({cycleSeverity:"warn"});oxlint({enforceNoDerivedStateEffects:true,enforceNoPropertyDefaultFallbacks:true,propertyDefaultAllowedFiles:["src/allowed-fallback.ts"]});eslint();console.log(cap,prettier);\n'
     );
     put(
       consumer,
@@ -185,6 +185,89 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
     run(consumer, "pnpm", ["exec", "prettier", "--check", "src/valid.ts"]);
     put(
       consumer,
+      "src/fallback.ts",
+      'export function state(record: { state?: string }) { return record.state ?? "unknown"; }\n'
+    );
+    run(consumer, "pnpm", ["exec", "oxlint", "src/fallback.ts"]);
+    put(
+      consumer,
+      "oxlint.config.ts",
+      'import { createConfig } from "@joedeleeuw/typescript-tooling/oxlint";\nexport default createConfig({repoRoot: import.meta.dirname, enforceNoPropertyDefaultFallbacks: true, propertyDefaultAllowedFiles: ["src/allowed-fallback.ts"]});\n'
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "oxlint", "src/fallback.ts"],
+      1,
+      "no-property-default-fallbacks"
+    );
+    put(
+      consumer,
+      "src/allowed-fallback.ts",
+      "export function count(record: { count?: number }) { return record.count ?? 0; }\n"
+    );
+    run(consumer, "pnpm", ["exec", "oxlint", "src/allowed-fallback.ts"]);
+    put(
+      consumer,
+      "nested/oxlint.config.ts",
+      'import { resolve } from "node:path";\nimport { createConfig } from "@joedeleeuw/typescript-tooling/oxlint";\nexport default createConfig({repoRoot: resolve(import.meta.dirname, ".."), enforceNoPropertyDefaultFallbacks: true, propertyDefaultAllowedFiles: ["src/allowed-fallback.ts"]});\n'
+    );
+    run(consumer, "pnpm", [
+      "exec",
+      "oxlint",
+      "src/allowed-fallback.ts",
+      "--config",
+      "nested/oxlint.config.ts",
+    ]);
+    put(
+      consumer,
+      "src/switch.ts",
+      'export function classify(kind: string) { if (kind === "ready") return 1; else if (kind === "pending") return 2; else if (kind === "paused") return 3; else if (kind === "failed") return 4; return 0; }\n'
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "oxlint", "src/switch.ts"],
+      1,
+      "prefer-switch"
+    );
+    put(
+      consumer,
+      "oxlint.react.config.ts",
+      'import { createConfig } from "@joedeleeuw/typescript-tooling/oxlint";\nexport default createConfig({repoRoot: import.meta.dirname, typeAware: false, enforceNoDerivedStateEffects: true});\n'
+    );
+    put(
+      consumer,
+      "src/greeting.tsx",
+      'import { useEffect, useState } from "react";\nexport function Greeting({ firstName, lastName }) {\n  const [fullName, setFullName] = useState("");\n  useEffect(() => {\n    setFullName(`${firstName} ${lastName}`);\n  }, [firstName, lastName]);\n  return <p>{fullName}</p>;\n}\n'
+    );
+    run(
+      consumer,
+      "pnpm",
+      [
+        "exec",
+        "oxlint",
+        "src/greeting.tsx",
+        "--config",
+        "oxlint.react.config.ts",
+      ],
+      1,
+      "no-deriving-state-in-effects"
+    );
+    put(
+      consumer,
+      "src/clean-effect.tsx",
+      'import { useEffect, useState } from "react";\nexport function Counter() {\n  const [count] = useState(0);\n  useEffect(() => {\n    console.log(count);\n  }, [count]);\n  return <p>{count}</p>;\n}\n'
+    );
+    run(consumer, "pnpm", [
+      "exec",
+      "oxlint",
+      "src/clean-effect.tsx",
+      "--config",
+      "oxlint.react.config.ts",
+    ]);
+    put(
+      consumer,
       "src/syntax.ts",
       "export function identity(value: any) { return value; }\n"
     );
@@ -194,6 +277,13 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       ["exec", "oxlint", "src/syntax.ts"],
       1,
       "no-explicit-any"
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "eslint", "src/syntax.ts", "--max-warnings=0"],
+      1,
+      "@typescript-eslint/no-explicit-any"
     );
     put(
       consumer,
