@@ -309,6 +309,42 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       tier === "full" ? 1 : 0,
       tier === "full" ? "no-unsafe-assignment" : undefined
     );
+    put(
+      consumer,
+      "src/floating.ts",
+      "export function trigger(work: () => Promise<number>) { work(); }\n"
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "oxlint", "src/floating.ts"],
+      tier === "full" ? 1 : 0,
+      tier === "full" ? "no-floating-promises" : undefined
+    );
+    put(
+      consumer,
+      "src/await-sync.ts",
+      "export async function compute() { return await 42; }\n"
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "oxlint", "src/await-sync.ts"],
+      tier === "full" ? 1 : 0,
+      tier === "full" ? "await-thenable" : undefined
+    );
+    put(
+      consumer,
+      "src/inexhaustive.ts",
+      'type Mode = "read" | "write";\nexport function describeMode(mode: Mode): number {\n  switch (mode) {\n    case "read":\n      return 1;\n  }\n  return 0;\n}\n'
+    );
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "oxlint", "src/inexhaustive.ts"],
+      tier === "full" ? 1 : 0,
+      tier === "full" ? "switch-exhaustiveness-check" : undefined
+    );
     put(consumer, "src/enum.ts", "export enum State { Ready }\n");
     run(
       consumer,

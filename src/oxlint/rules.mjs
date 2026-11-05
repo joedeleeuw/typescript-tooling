@@ -36,6 +36,8 @@ export const typescriptSyntaxRules = Object.freeze({
 });
 
 export const typescriptTypeAwareRules = Object.freeze({
+  "typescript/await-thenable": "error",
+  "typescript/no-floating-promises": "error",
   "typescript/no-unsafe-assignment": "error",
   "typescript/no-unsafe-argument": "error",
   "typescript/no-unsafe-call": "error",
@@ -59,6 +61,7 @@ export const typescriptTypeAwareRules = Object.freeze({
   "typescript/prefer-promise-reject-errors": "error",
   "typescript/only-throw-error": "error",
   "typescript/require-await": "error",
+  "typescript/switch-exhaustiveness-check": "error",
   "typescript/no-unnecessary-condition": [
     "error",
     { allowConstantLoopConditions: true },
