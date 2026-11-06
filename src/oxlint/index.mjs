@@ -1,5 +1,6 @@
+import { statSync } from "node:fs";
 import { createRequire } from "node:module";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { defineConfig } from "oxlint";
 import {
   complexityRules,
@@ -24,15 +25,44 @@ const baselineJavascriptPlugins = [
   },
 ];
 
-export function typescriptBaselineTier(repoRoot = process.cwd()) {
-  const consumerRequire = createRequire(resolve(repoRoot, "package.json"));
+const tsgolintExecutableNames =
+  process.platform === "win32"
+    ? ["tsgolint.cmd", "tsgolint.exe"]
+    : ["tsgolint"];
+
+function isFile(path) {
   try {
-    consumerRequire.resolve("oxlint-tsgolint/package.json");
-    return "full";
+    return statSync(path).isFile();
   } catch (error) {
-    if (error.code !== "MODULE_NOT_FOUND") throw error;
-    return "syntax-only";
+    if (error.code === "ENOENT" || error.code === "ENOTDIR") return false;
+    throw error;
   }
+}
+
+function directoryHasTsgolint(directory) {
+  return tsgolintExecutableNames.some((name) =>
+    isFile(resolve(directory, name))
+  );
+}
+
+export function typescriptBaselineTier(repoRoot = process.cwd()) {
+  const envPath = process.env.OXLINT_TSGOLINT_PATH?.trim();
+  if (envPath) {
+    const override = resolve(repoRoot, envPath);
+    if (isFile(override)) return "full";
+    if (directoryHasTsgolint(override)) return "full";
+    throw new Error(
+      `OXLINT_TSGOLINT_PATH must name a tsgolint executable or a directory containing one; received ${override}.`
+    );
+  }
+
+  for (let directory = resolve(repoRoot); ; directory = dirname(directory)) {
+    if (directoryHasTsgolint(resolve(directory, "node_modules/.bin"))) {
+      return "full";
+    }
+    if (dirname(directory) === directory) break;
+  }
+  return "syntax-only";
 }
 
 const disabledCategories = {

@@ -15,15 +15,20 @@ const scratch = mkdtempSync(join(tmpdir(), "typescript-tooling-consumer-"));
 const receipt = [];
 console.log(`Packed consumer directory: ${scratch}`);
 
-function run(cwd, command, args, expected = 0, diagnostic) {
+function run(cwd, command, args, expected = 0, diagnostic, tsgolintPath) {
+  const environment = {
+    ...process.env,
+    NODE_ENV: "development",
+    PATH: `${dirname(process.execPath)}:${process.env.PATH}`,
+  };
+  delete environment.OXLINT_TSGOLINT_PATH;
+  if (tsgolintPath !== undefined) {
+    environment.OXLINT_TSGOLINT_PATH = tsgolintPath;
+  }
   const result = spawnSync(command, args, {
     cwd,
     encoding: "utf8",
-    env: {
-      ...process.env,
-      NODE_ENV: "development",
-      PATH: `${dirname(process.execPath)}:${process.env.PATH}`,
-    },
+    env: environment,
     maxBuffer: 16 * 1024 * 1024,
   });
   const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
@@ -94,7 +99,7 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
     put(
       consumer,
       "pnpm-workspace.yaml",
-      "packages:\n  - .\n\nallowBuilds: {}\n"
+      "packages:\n  - .\n  - packages/*\n\nallowBuilds: {}\n"
     );
     run(consumer, "pnpm", ["install", "--config.auto-install-peers=false"]);
     put(
@@ -140,6 +145,99 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       "--eval",
       `import {typescriptBaselineTier} from '@joedeleeuw/typescript-tooling/oxlint'; if(typescriptBaselineTier(process.cwd()) !== '${tier}') throw new Error('wrong tier'); console.log('${tier}');`,
     ]);
+    if (tier === "full") {
+      const workspacePackage = join(consumer, "packages/type-aware-app");
+      put(
+        workspacePackage,
+        "package.json",
+        JSON.stringify({
+          name: "packed-type-aware-app",
+          private: true,
+          type: "module",
+        })
+      );
+      put(
+        workspacePackage,
+        "oxlint.config.ts",
+        'import { createConfig } from "@joedeleeuw/typescript-tooling/oxlint";\nexport default createConfig({repoRoot: import.meta.dirname});\n'
+      );
+      put(
+        workspacePackage,
+        "tsconfig.json",
+        JSON.stringify({
+          extends: "@joedeleeuw/typescript-tooling/tsconfig/base.json",
+          compilerOptions: { noEmit: true, lib: ["ES2022"] },
+          include: ["src/**/*.ts"],
+        })
+      );
+      put(
+        workspacePackage,
+        "src/typed.ts",
+        'export const parsed: string = JSON.parse("42");\n'
+      );
+      run(workspacePackage, "node", [
+        "--input-type=module",
+        "--eval",
+        "import {typescriptBaselineTier} from '@joedeleeuw/typescript-tooling/oxlint'; if(typescriptBaselineTier(process.cwd()) !== 'full') throw new Error('hoisted tsgolint not detected');",
+      ]);
+      run(
+        workspacePackage,
+        join(consumer, "node_modules/.bin/oxlint"),
+        ["src/typed.ts"],
+        1,
+        "no-unsafe-assignment"
+      );
+
+      const packageWithoutBin = join(scratch, `${engine}-package-without-bin`);
+      put(
+        packageWithoutBin,
+        "node_modules/oxlint-tsgolint/package.json",
+        JSON.stringify({
+          name: "oxlint-tsgolint",
+          version: "0.0.0",
+          bin: { tsgolint: "bin/tsgolint.js" },
+        })
+      );
+      put(
+        packageWithoutBin,
+        "node_modules/oxlint-tsgolint/bin/tsgolint.js",
+        "#!/usr/bin/env node\n"
+      );
+      run(consumer, "node", [
+        "--input-type=module",
+        "--eval",
+        `import {typescriptBaselineTier} from '@joedeleeuw/typescript-tooling/oxlint'; if(typescriptBaselineTier(${JSON.stringify(packageWithoutBin)}) !== 'syntax-only') throw new Error('package metadata without an executable accepted');`,
+      ]);
+
+      const environmentOnly = join(scratch, `${engine}-environment-only`);
+      mkdirSync(environmentOnly);
+      const tsgolintPath = join(consumer, "node_modules/.bin/tsgolint");
+      run(
+        consumer,
+        "node",
+        [
+          "--input-type=module",
+          "--eval",
+          `import {createConfig,typescriptBaselineTier} from '@joedeleeuw/typescript-tooling/oxlint'; if(typescriptBaselineTier(${JSON.stringify(environmentOnly)}) !== 'full') throw new Error('tsgolint override not detected'); createConfig({repoRoot: ${JSON.stringify(environmentOnly)}, typeAware: true});`,
+        ],
+        0,
+        undefined,
+        tsgolintPath
+      );
+      const missingTsgolint = join(environmentOnly, "missing-tsgolint");
+      run(
+        consumer,
+        "node",
+        [
+          "--input-type=module",
+          "--eval",
+          `import {typescriptBaselineTier} from '@joedeleeuw/typescript-tooling/oxlint'; let rejection; try { typescriptBaselineTier(${JSON.stringify(environmentOnly)}); } catch (error) { rejection = error; } if (!(rejection instanceof Error) || !rejection.message.includes('OXLINT_TSGOLINT_PATH') || !rejection.message.includes(${JSON.stringify(missingTsgolint)})) throw new Error('invalid override did not fail descriptively', {cause: rejection});`,
+        ],
+        0,
+        undefined,
+        missingTsgolint
+      );
+    }
     run(consumer, "pnpm", ["exec", "tsc", "--noEmit"]);
     put(
       consumer,
