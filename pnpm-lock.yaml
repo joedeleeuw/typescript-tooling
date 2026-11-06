@@ -29,9 +29,6 @@ importers:
         specifier: ^8.72.0
         version: 8.72.0(eslint@10.13.0)(typescript@6.0.3)
     devDependencies:
-      "@eslint/js":
-        specifier: 10.0.1
-        version: 10.0.1(eslint@10.13.0)
       "@types/node":
         specifier: 26.6.6
         version: 26.6.6
@@ -234,18 +231,6 @@ packages:
         integrity: sha512-rVcxLmwSkEL3aWS3vAgsTRrQHoYE1b0XcgDtKHDJ92XOkyUpcbS/g0tUJKhvCtlEhYzgKBWsgDd+Z/aPhd166w==,
       }
     engines: { node: ^20.19.0 || ^22.13.0 || >=24 }
-
-  "@eslint/js@10.0.1":
-    resolution:
-      {
-        integrity: sha512-zeR9k5pd4gxjZ0abRoIaxdc7I3nDktoXZk2qOv9gCNWx3mVwEn32VRhyLaRsDiJjTs0xq/T8mfPtyuXu7GWBcA==,
-      }
-    engines: { node: ^20.19.0 || ^22.13.0 || >=24 }
-    peerDependencies:
-      eslint: ^10.0.0
-    peerDependenciesMeta:
-      eslint:
-        optional: true
 
   "@eslint/object-schema@3.0.5":
     resolution:
@@ -2080,10 +2065,6 @@ snapshots:
     dependencies:
       mdn-data: 2.37.2
       source-map-js: 1.2.2
-
-  "@eslint/js@10.0.1(eslint@10.13.0)":
-    optionalDependencies:
-      eslint: 10.13.0
 
   "@eslint/object-schema@3.0.5": {}
 

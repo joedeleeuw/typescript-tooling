@@ -84,7 +84,6 @@
     }
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
     "@types/node": "26.6.6",
     "dependency-cruiser": "18.5.0",
     "eslint": "10.13.0",

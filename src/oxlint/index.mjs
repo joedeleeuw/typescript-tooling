@@ -88,44 +88,43 @@ const eslintCommentRules = {
   "eslint-comments/no-unused-enable": "error",
 };
 
-export function createConfig({
-  repoRoot = process.cwd(),
-  maxLines = 1500,
-  typeAware = typescriptBaselineTier(repoRoot) === "full",
-  enforceNoPropertyDefaultFallbacks = false,
-  propertyDefaultAllowedFiles = [],
-  enforceNoDerivedStateEffects = false,
-} = {}) {
+const optionalEcosystemCatalog = [
+  {
+    key: "enforceNoPropertyDefaultFallbacks",
+    plugin: {
+      name: "@rikalabs",
+      specifier: packageRequire.resolve("@rikalabs/oxlint-standards/plugin"),
+    },
+    rules: { "@rikalabs/no-property-default-fallbacks": "error" },
+  },
+  {
+    key: "enforceNoDerivedStateEffects",
+    plugin: {
+      name: "react-hooks-js",
+      specifier: packageRequire.resolve("eslint-plugin-react-hooks"),
+    },
+    rules: { "react-hooks-js/no-deriving-state-in-effects": "error" },
+  },
+];
+
+export function createConfig(options = {}) {
+  const {
+    repoRoot = process.cwd(),
+    maxLines = 1500,
+    typeAware = typescriptBaselineTier(repoRoot) === "full",
+    propertyDefaultAllowedFiles = [],
+  } = options;
   if (typeAware && typescriptBaselineTier(repoRoot) !== "full") {
     throw new Error(
       "Install oxlint-tsgolint to enable the type-aware baseline."
     );
   }
-  const optionalEcosystemConfigurations = [
-    {
-      enabled: enforceNoPropertyDefaultFallbacks,
-      plugin: {
-        name: "@rikalabs",
-        specifier: packageRequire.resolve("@rikalabs/oxlint-standards/plugin"),
-      },
-      rules: { "@rikalabs/no-property-default-fallbacks": "error" },
-    },
-    {
-      enabled: enforceNoDerivedStateEffects,
-      plugin: {
-        name: "react-hooks-js",
-        specifier: packageRequire.resolve("eslint-plugin-react-hooks"),
-      },
-      rules: { "react-hooks-js/no-deriving-state-in-effects": "error" },
-    },
-  ].filter(({ enabled }) => enabled);
-  const optionalEcosystemPlugins = optionalEcosystemConfigurations.map(
-    ({ plugin }) => plugin
+  const activeEcosystem = optionalEcosystemCatalog.filter(({ key }) =>
+    Boolean(options[key])
   );
+  const optionalEcosystemPlugins = activeEcosystem.map(({ plugin }) => plugin);
   const optionalEcosystemRules = Object.fromEntries(
-    optionalEcosystemConfigurations.flatMap(({ rules }) =>
-      Object.entries(rules)
-    )
+    activeEcosystem.flatMap(({ rules }) => Object.entries(rules))
   );
   return defineConfig({
     categories: disabledCategories,

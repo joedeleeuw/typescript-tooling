@@ -1,4 +1,5 @@
 import type { DummyRuleMap, OxlintConfig } from "oxlint";
+
 export const complexityRules: Readonly<{
   complexity: ["error", Readonly<{ max: 25; variant: "modified" }>];
   "max-depth": ["error", 4];
