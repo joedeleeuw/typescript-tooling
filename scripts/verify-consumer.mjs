@@ -495,7 +495,7 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
     run(consumer, "node", [
       "--input-type=module",
       "-e",
-      'import {createConfig} from "@joedeleeuw/typescript-tooling/eslint";let rejected=false;try{createConfig({playwrightFiles:["../outside/**/*.ts"]});}catch(error){rejected=error instanceof TypeError;}if(!rejected)throw new Error("escaping playwrightFiles entry accepted");',
+      'import {createConfig} from "@joedeleeuw/typescript-tooling/eslint";for(const playwrightFiles of [["../outside/**/*.ts"],["C:/outside/**/*.ts"],["\\\\\\\\host\\\\share\\\\*.ts"],["/abs/*.ts"],[""],{},false]){let rejected=false;try{createConfig({playwrightFiles});}catch(error){rejected=error instanceof TypeError;}if(!rejected)throw new Error(`invalid playwrightFiles accepted: ${JSON.stringify(playwrightFiles)}`);}',
     ]);
     put(consumer, "src/strict.ts", "export const value: string = undefined;\n");
     run(

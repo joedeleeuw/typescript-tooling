@@ -23,20 +23,29 @@ export const restrictedSyntax = Object.freeze([
   },
 ]);
 
-function playwrightOverride(files) {
-  const invalid = files.filter(
-    (file) =>
-      typeof file !== "string" ||
-      file.length === 0 ||
-      file.startsWith("/") ||
-      file.split("/").includes("..")
-  );
-  if (invalid.length > 0) {
+function playwrightConfigs(files) {
+  if (!Array.isArray(files)) {
     throw new TypeError(
-      `playwrightFiles entries must be non-empty repository-relative patterns; received ${JSON.stringify(invalid)}.`
+      `playwrightFiles must be an array of repository-relative patterns; received ${JSON.stringify(files)}.`
     );
   }
-  return { ...playwright.configs["flat/recommended"], files };
+  const invalid = files.filter((file) => {
+    if (typeof file !== "string" || file.length === 0) return true;
+    const pattern = file.replaceAll("\\", "/");
+    return (
+      pattern.startsWith("/") ||
+      /^[A-Za-z]:\//u.test(pattern) ||
+      pattern.split("/").includes("..")
+    );
+  });
+  if (invalid.length > 0) {
+    throw new TypeError(
+      `playwrightFiles entries must be non-empty patterns relative to the repository, without drive letters, leading slashes or "..": received ${JSON.stringify(invalid)}.`
+    );
+  }
+  return files.length > 0
+    ? [{ ...playwright.configs["flat/recommended"], files }]
+    : [];
 }
 
 export function createConfig({
@@ -61,7 +70,7 @@ export function createConfig({
         "sql-template/no-unsafe-query": "error",
       },
     },
-    playwrightFiles.length > 0 ? [playwrightOverride(playwrightFiles)] : []
+    playwrightConfigs(playwrightFiles)
   );
 }
 
