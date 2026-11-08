@@ -1,5 +1,6 @@
 import parser from "@typescript-eslint/parser";
 import { defineConfig } from "eslint/config";
+import playwright from "eslint-plugin-playwright";
 import sqlTemplate from "eslint-plugin-sql-template";
 import typescriptEslint from "typescript-eslint";
 
@@ -22,26 +23,46 @@ export const restrictedSyntax = Object.freeze([
   },
 ]);
 
+function playwrightOverride(files) {
+  const invalid = files.filter(
+    (file) =>
+      typeof file !== "string" ||
+      file.length === 0 ||
+      file.startsWith("/") ||
+      file.split("/").includes("..")
+  );
+  if (invalid.length > 0) {
+    throw new TypeError(
+      `playwrightFiles entries must be non-empty repository-relative patterns; received ${JSON.stringify(invalid)}.`
+    );
+  }
+  return { ...playwright.configs["flat/recommended"], files };
+}
+
 export function createConfig({
   tsconfigRootDir = process.cwd(),
   projectService = true,
+  playwrightFiles = [],
 } = {}) {
-  return defineConfig({
-    files: ["**/*.{ts,tsx,mts,cts}"],
-    languageOptions: {
-      parser,
-      parserOptions: { projectService, tsconfigRootDir },
+  return defineConfig(
+    {
+      files: ["**/*.{ts,tsx,mts,cts}"],
+      languageOptions: {
+        parser,
+        parserOptions: { projectService, tsconfigRootDir },
+      },
+      plugins: {
+        "sql-template": sqlTemplate,
+        "@typescript-eslint": typescriptEslint.plugin,
+      },
+      rules: {
+        "@typescript-eslint/no-explicit-any": "error",
+        "no-restricted-syntax": ["error", ...restrictedSyntax],
+        "sql-template/no-unsafe-query": "error",
+      },
     },
-    plugins: {
-      "sql-template": sqlTemplate,
-      "@typescript-eslint": typescriptEslint.plugin,
-    },
-    rules: {
-      "@typescript-eslint/no-explicit-any": "error",
-      "no-restricted-syntax": ["error", ...restrictedSyntax],
-      "sql-template/no-unsafe-query": "error",
-    },
-  });
+    playwrightFiles.length > 0 ? [playwrightOverride(playwrightFiles)] : []
+  );
 }
 
 export default createConfig;

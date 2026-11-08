@@ -54,17 +54,18 @@
     "@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",
     "@rikalabs/oxlint-standards": "^0.8.1",
     "@typescript-eslint/parser": "^8.72.0",
+    "eslint-plugin-playwright": "^2.12.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-sql-template": "^3.2.0",
     "eslint-plugin-unicorn": "^79.0.0",
     "typescript-eslint": "^8.72.0"
   },
   "peerDependencies": {
+    "dependency-cruiser": ">=17 <19",
     "eslint": ">=9.38.0 <11",
     "oxlint": ">=1.78.0 <2",
-    "typescript": ">=6.0 <6.1",
     "prettier": ">=3 <4",
-    "dependency-cruiser": ">=17 <19"
+    "typescript": ">=6.0 <6.1"
   },
   "peerDependenciesMeta": {
     "eslint": {

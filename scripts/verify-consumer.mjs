@@ -123,7 +123,7 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
     put(
       consumer,
       "eslint.config.mjs",
-      'import { createConfig } from "@joedeleeuw/typescript-tooling/eslint";\nexport default createConfig({tsconfigRootDir: import.meta.dirname});\n'
+      'import { createConfig } from "@joedeleeuw/typescript-tooling/eslint";\nexport default createConfig({tsconfigRootDir: import.meta.dirname, playwrightFiles: ["src/e2e/**/*.ts"]});\n'
     );
     put(
       consumer,
@@ -475,6 +475,28 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       1,
       "sql-template/no-unsafe-query"
     );
+    const networkIdle =
+      'declare const page: { goto(url: string, options: { waitUntil: string }): Promise<void> };\nexport async function open() { await page.goto("/", { waitUntil: "networkidle" }); }\n';
+    put(consumer, "src/e2e/idle.ts", networkIdle);
+    run(
+      consumer,
+      "pnpm",
+      ["exec", "eslint", "src/e2e/idle.ts"],
+      1,
+      "playwright/no-networkidle"
+    );
+    put(consumer, "src/idle.ts", networkIdle);
+    run(consumer, "pnpm", [
+      "exec",
+      "eslint",
+      "src/idle.ts",
+      "--max-warnings=0",
+    ]);
+    run(consumer, "node", [
+      "--input-type=module",
+      "-e",
+      'import {createConfig} from "@joedeleeuw/typescript-tooling/eslint";let rejected=false;try{createConfig({playwrightFiles:["../outside/**/*.ts"]});}catch(error){rejected=error instanceof TypeError;}if(!rejected)throw new Error("escaping playwrightFiles entry accepted");',
+    ]);
     put(consumer, "src/strict.ts", "export const value: string = undefined;\n");
     run(
       consumer,
