@@ -475,6 +475,22 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       1,
       "sql-template/no-unsafe-query"
     );
+    const namedBinding =
+      "declare const name: string;\nexport const pick = { accessibilityLabel: `Select ${name}` };\nexport const query = { text: `SELECT ${name} FROM users` };\n";
+    put(consumer, "src/sql-binding.ts", namedBinding);
+    run(
+      consumer,
+      "pnpm",
+      [
+        "exec",
+        "eslint",
+        "--rule",
+        'sql-template/no-unsafe-query: [error, { nonQueryBindings: ["accessibilityLabel"] }]',
+        "src/sql-binding.ts",
+      ],
+      1,
+      "1 problem"
+    );
     const networkIdle =
       'declare const page: { goto(url: string, options: { waitUntil: string }): Promise<void> };\nexport async function open() { await page.goto("/", { waitUntil: "networkidle" }); }\n';
     put(consumer, "src/e2e/idle.ts", networkIdle);

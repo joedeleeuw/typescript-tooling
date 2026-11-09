@@ -23,6 +23,82 @@ export const restrictedSyntax = Object.freeze([
   },
 ]);
 
+function nameOfBinding(key) {
+  return key.type === "JSXNamespacedName" ? null : (key.name ?? key.value);
+}
+
+function boundName(template) {
+  let current = template;
+  for (;;) {
+    const parent = current.parent;
+    switch (parent.type) {
+      case "Property":
+        return parent.value === current && !parent.computed
+          ? nameOfBinding(parent.key)
+          : null;
+      case "JSXAttribute":
+        return nameOfBinding(parent.name);
+      case "ConditionalExpression":
+        if (parent.test === current) return null;
+        current = parent;
+        break;
+      case "ArrayExpression":
+      case "JSXExpressionContainer":
+      case "LogicalExpression":
+        current = parent;
+        break;
+      case "MemberExpression":
+        if (parent.object !== current) return null;
+        if (parent.parent.type !== "CallExpression") return null;
+        if (parent.parent.callee !== parent) return null;
+        current = parent.parent;
+        break;
+      default:
+        return null;
+    }
+  }
+}
+
+const noUnsafeQuery = sqlTemplate.rules["no-unsafe-query"];
+const sqlTemplatePlugin = {
+  ...sqlTemplate,
+  rules: {
+    ...sqlTemplate.rules,
+    "no-unsafe-query": {
+      ...noUnsafeQuery,
+      meta: {
+        ...noUnsafeQuery.meta,
+        schema: [
+          {
+            type: "object",
+            properties: {
+              nonQueryBindings: {
+                type: "array",
+                items: { type: "string", minLength: 1 },
+                uniqueItems: true,
+              },
+            },
+            additionalProperties: false,
+          },
+        ],
+      },
+      create(context) {
+        const visitors = noUnsafeQuery.create(context);
+        const nonQueryBindings = new Set(
+          context.options[0]?.nonQueryBindings ?? []
+        );
+        return {
+          TemplateLiteral(node) {
+            if (!nonQueryBindings.has(boundName(node))) {
+              visitors.TemplateLiteral(node);
+            }
+          },
+        };
+      },
+    },
+  },
+};
+
 function playwrightConfigs(files) {
   if (!Array.isArray(files)) {
     throw new TypeError(
@@ -61,7 +137,7 @@ export function createConfig({
         parserOptions: { projectService, tsconfigRootDir },
       },
       plugins: {
-        "sql-template": sqlTemplate,
+        "sql-template": sqlTemplatePlugin,
         "@typescript-eslint": typescriptEslint.plugin,
       },
       rules: {
