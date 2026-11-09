@@ -27,7 +27,44 @@ function nameOfBinding(key) {
   return key.type === "JSXNamespacedName" ? null : (key.name ?? key.value);
 }
 
-function boundName(template) {
+const ARRAY_COMPOSITION_ARGUMENT = new Map([
+  [
+    "filter",
+    (argument, sourceCode) =>
+      argument.type === "Identifier" &&
+      argument.name === "Boolean" &&
+      sourceCode.isGlobalReference(argument),
+  ],
+  [
+    "join",
+    (argument) =>
+      argument.type === "Literal" && typeof argument.value === "string",
+  ],
+]);
+
+function arrayCompositionCall(receiver, sourceCode) {
+  const member = receiver.parent;
+  const call = member.parent;
+  const yieldsArray =
+    receiver.type === "ArrayExpression" ||
+    (receiver.type === "CallExpression" &&
+      receiver.callee.property.name === "filter");
+  if (
+    !yieldsArray ||
+    member.object !== receiver ||
+    member.computed ||
+    member.property.type !== "Identifier" ||
+    call.type !== "CallExpression" ||
+    call.callee !== member ||
+    call.arguments.length !== 1
+  ) {
+    return null;
+  }
+  const accepts = ARRAY_COMPOSITION_ARGUMENT.get(member.property.name);
+  return accepts?.(call.arguments[0], sourceCode) ? call : null;
+}
+
+function boundName(template, sourceCode) {
   let current = template;
   for (;;) {
     const parent = current.parent;
@@ -48,10 +85,8 @@ function boundName(template) {
         current = parent;
         break;
       case "MemberExpression":
-        if (parent.object !== current) return null;
-        if (parent.parent.type !== "CallExpression") return null;
-        if (parent.parent.callee !== parent) return null;
-        current = parent.parent;
+        current = arrayCompositionCall(current, sourceCode);
+        if (current === null) return null;
         break;
       default:
         return null;
@@ -89,7 +124,7 @@ const sqlTemplatePlugin = {
         );
         return {
           TemplateLiteral(node) {
-            if (!nonQueryBindings.has(boundName(node))) {
+            if (!nonQueryBindings.has(boundName(node, context.sourceCode))) {
               visitors.TemplateLiteral(node);
             }
           },

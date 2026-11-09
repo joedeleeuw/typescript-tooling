@@ -476,7 +476,7 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
       "sql-template/no-unsafe-query"
     );
     const namedBinding =
-      "declare const name: string;\nexport const pick = { accessibilityLabel: `Select ${name}` };\nexport const query = { text: `SELECT ${name} FROM users` };\n";
+      'declare const name: string;\ndeclare function executeQuery(sql: string): string;\nexport const pick = { accessibilityLabel: `Select ${name}` };\nexport const composed = { accessibilityLabel: [`Select ${name}`, name].filter(Boolean).join(", ") };\nexport const query = { text: `SELECT ${name} FROM users` };\nexport const executed = { accessibilityLabel: [`SELECT * FROM users WHERE id = ${name}`].map(executeQuery).join(", ") };\n';
     put(consumer, "src/sql-binding.ts", namedBinding);
     run(
       consumer,
@@ -489,7 +489,7 @@ for (const engine of [manifest.devDependencies.oxlint, "1.78.0"]) {
         "src/sql-binding.ts",
       ],
       1,
-      "1 problem"
+      "2 problems"
     );
     const networkIdle =
       'declare const page: { goto(url: string, options: { waitUntil: string }): Promise<void> };\nexport async function open() { await page.goto("/", { waitUntil: "networkidle" }); }\n';
